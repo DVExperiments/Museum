@@ -1,0 +1,37 @@
+# Catalogues each complete month into archive/ and checks the archive against today's code.
+# Runs every night shortly after the universe turns its page, and can be run by hand from the Actions tab.
+name: Accession
+
+on:
+  schedule:
+    - cron: '30 0 * * *'   # 00:30 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: accession
+  cancel-in-progress: false
+
+jobs:
+  accession:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Catalogue and conserve
+        run: node tools/accession.mjs
+      - name: Commit any changes to the archive
+        run: |
+          git config user.name "Museum curator"
+          git config user.email "actions@users.noreply.github.com"
+          git add archive
+          if git diff --cached --quiet; then
+            echo "Nothing new for the archive."
+          else
+            git commit -m "Accession: $(date -u +%Y-%m-%d)"
+            git push
+          fi

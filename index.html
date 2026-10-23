@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Museum of the Pixel Universe</title>
+<meta name="description" content="The history of the Pixel Universe: its champions, its records, its laws and its archive, kept since the first Daily Crawl.">
+<meta name="theme-color" content="#E6ECEE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10181D" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 9 9%22 shape-rendering=%22crispEdges%22%3E%3Cpath fill=%22%2314212A%22 d=%22M0 0h9v9H0z%22/%3E%3Cpath fill=%22%23F3F6F7%22 d=%22M1 1h7v7H1z%22/%3E%3Cpath fill=%22%23FF5FA2%22 d=%22M4 4h1v1H4z%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="entrance wrap">
+  <h1>The Museum of the Pixel Universe</h1>
+  <p class="lede">Every race, record, law and storm since the first Daily Crawl on 3 December 2025, kept for as long as there are pixels. Open always. Admission is free.</p>
+  <nav class="floorplan" aria-label="Galleries">
+    <a href="#champions">Hall of Champions</a>
+    <a href="#records">The Record Books</a>
+    <a href="#timeline">Timeline</a>
+    <a href="#laws">The Law Library</a>
+    <a href="#archive">The Archive</a>
+  </nav>
+</header>
+
+<main class="wrap" id="main">
+  <p class="notice" id="notice" hidden></p>
+
+  <section id="champions" class="gallery" aria-labelledby="champions-title">
+    <h2 id="champions-title">Hall of Champions</h2>
+    <p class="intro">The sixteen pixels of Glacial, hung in order of Grand Prix titles, then wins. Each portrait is shown at actual size, enlarged.</p>
+    <div class="portraits" id="portraits"><p class="empty">Hanging the portraits…</p></div>
+  </section>
+
+  <section id="records" class="gallery" aria-labelledby="records-title">
+    <h2 id="records-title">The Record Books</h2>
+    <p class="intro">Every record standing today, across every site. Records are entered by hand and never rubbed out.</p>
+    <div id="recordbooks"></div>
+  </section>
+
+  <section id="timeline" class="gallery" aria-labelledby="timeline-title">
+    <h2 id="timeline-title">Timeline of the Universe</h2>
+    <p class="intro">The events that mattered most, from every site, in the order they happened.</p>
+    <label class="toggle"><input type="checkbox" id="more-events"> Include notable events as well as major ones</label>
+    <div id="timeline-list"></div>
+  </section>
+
+  <section id="laws" class="gallery" aria-labelledby="laws-title">
+    <h2 id="laws-title">The Law Library</h2>
+    <div id="library"></div>
+  </section>
+
+  <section id="archive" class="gallery" aria-labelledby="archive-title">
+    <h2 id="archive-title">The Archive</h2>
+    <p class="intro">At the close of each month the Museum takes a snapshot of every site’s results and keeps it here for good. If a site’s rules ever change, its earlier history can be read from the archive instead of being recomputed. The conservators check each archived month against the universe as it computes today, so any month whose history has changed is caught.</p>
+    <div class="archive-actions">
+      <button type="button" id="check-all">Check the whole collection</button>
+      <span id="check-status" role="status"></span>
+    </div>
+    <div class="scroll"><table class="table" id="archive-table"></table></div>
+    <details class="byhand">
+      <summary>Catalogue a month by hand</summary>
+      <p>The archive fills itself every night. If it ever stops, download a month here, add it to the <code>archive</code> folder of the Museum repo, and add the month to <code>archive/index.json</code>.</p>
+      <label for="hand-month">Month</label>
+      <select id="hand-month"></select>
+      <button type="button" id="hand-download">Download snapshot</button>
+    </details>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>The Museum reads every site in the universe, and nothing reads the Museum. Part of the <a href="https://github.com/DVExperiments">Pixel Universe</a>.</p>
+</footer>
+
+<script>window.PixelUniverseOptions = Object.assign(window.PixelUniverseOptions || {}, { senateSkipGlacial: true });</script>
+<script src="https://dvexperiments.github.io/Glacial/js/pixels.js"></script>
+<script src="https://dvexperiments.github.io/Glacial/js/sim.js"></script>
+<script src="https://dvexperiments.github.io/Glacial/js/league.js"></script>
+<script src="https://dvexperiments.github.io/Weather/universe.js"></script>
+<script src="https://dvexperiments.github.io/Senate/universe.js"></script>
+<script src="https://dvexperiments.github.io/City/universe.js"></script>
+<script src="https://dvexperiments.github.io/Bookmaker/universe.js"></script>
+<script src="universe.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
