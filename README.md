@@ -67,3 +67,7 @@ tools/accession.mjs              catalogues months and checks the archive
 .github/workflows/accession.yml  runs the tool nightly
 archive/                         the collection
 ```
+
+## The Hall of Disasters
+
+Every glitch (City's digital disasters, from 1 March 2027) that has run its course, as an exhibit: what kind, when, how long, how severe, every district it spread through, and what it did. Read from City's `glitchesBetween`. The timeline also carries glitches as they begin and spread.

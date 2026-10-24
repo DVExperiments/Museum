@@ -44,6 +44,27 @@
       '</tbody></table></div>').join('') + '</div>';
   }
 
+  // ---------------------------------------------------------------- Hall of Disasters
+  function disasters() {
+    const C = window.PixelUniverse && window.PixelUniverse.city;
+    const el = $('disaster-list');
+    if (!C || !C.glitchesBetween || !C.ready()) { el.innerHTML = '<p class="empty">The Hall of Disasters needs Pixel City, which could not be reached.</p>'; return; }
+    const done = C.glitchesBetween(C.glitchStart, now).filter((g) => g.end <= now);
+    if (!done.length) { el.innerHTML = '<p class="empty">' + (now < C.glitchStart ? 'The hall opens on 1 March 2027. So far, nothing has gone wrong.' : 'No disasters yet. The hall waits.') + '</p>'; return; }
+    const chains = {};
+    for (const g of done) { const root = g.id.replace(/-\d+$/, ''); (chains[root] = chains[root] || []).push(g); }
+    const WHAT = { corruption: 'Buildings rendered as noise; businesses made less, and every patch shop was mobbed for days.', refresh: 'The district went dark, as in a blackout: no power, no trade, and a rattled population.',
+      bleed: 'Colours ran across district borders; palette shops did a roaring trade.', stuck: 'Everything stopped: no deliveries reached the shops, and almost nothing was made.', leak: 'The raw colour in store at the export dock was eaten into, and the refineries went short.' };
+    const fmt = (ms) => new Date(ms).toISOString().slice(0, 10);
+    el.innerHTML = '<div class="disasters">' + Object.keys(chains).sort().reverse().map((k) => {
+      const c = chains[k], first = c[0], hours = Math.round((Math.max(...c.map((g) => g.end)) - first.start) / 3600000);
+      const path = c.map((g) => g.districtName).join(' \u2192 ');
+      return '<figure class="disaster"><div class="exhibit exhibit-' + first.type + '" aria-hidden="true"></div><figcaption><b>' + esc(first.label) + (c.length > 1 ? ', spreading' : '') + '</b>' +
+        '<span class="sub">' + esc(fmt(first.start)) + (first.storm ? ', in a storm' : '') + '. ' + hours + ' hours. Severity ' + first.severity + ' of 3.</span>' +
+        '<p>' + esc(path) + '</p><p class="sub">' + esc(WHAT[first.type]) + '</p></figcaption></figure>';
+    }).join('') + '</div>';
+  }
+
   // ---------------------------------------------------------------- Timeline
   let events = { 4: null, 3: null };
   function timeline() {
@@ -151,6 +172,6 @@
   applyLaws();
   $('more-events').addEventListener('change', timeline);
   // hang the galleries one at a time, so the page appears quickly
-  const steps = [hallOfChampions, recordBooks, timeline, library, loadArchive];
+  const steps = [hallOfChampions, recordBooks, disasters, timeline, library, loadArchive];
   (function next() { const s = steps.shift(); if (!s) return; try { s(); } catch (e) { console.error(e); } setTimeout(next, 0); })();
 })();
