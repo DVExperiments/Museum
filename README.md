@@ -73,3 +73,9 @@ archive/                         the collection
 Every glitch (City's digital disasters, from 1 March 2027) that has run its course, as an exhibit: what kind, when, how long, how severe, every district it spread through, and what it did. Read from City's `glitchesBetween`. The timeline also carries glitches as they begin and spread.
 
 The timeline now also carries the Exchange, the Bank and Society, and where an event knows its causes, it says why underneath. Each exhibit in the Hall of Disasters lists its consequences: businesses in the districts it struck that closed within three weeks, with the disruption among their causes.
+
+## Reading the archive
+
+Each archived month opens into a plain summary of what happened, read from its record: the races and the Grand Prix winner, the weather's extremes and the forecaster's record, the laws the Senate passed, the city's peak demand and blackouts, and the Bookmaker's biggest payout. The record itself is still there as a small data link, for researchers. Conditions read in plain words: intact, altered (and whose history changed), or which sites couldn't be checked this time.
+
+The accession tool now loads the whole chain (the census, the Exchange and Society as well), since the Senate, the city and the Bookmaker need them. It also fills in any site an archived month recorded as missing, once it can be computed: only that section is added, with the date it was filled in (`filled`), and nothing already archived changes. The Bookmaker was missing from every month until October 2026 for this reason; it has been filled in.

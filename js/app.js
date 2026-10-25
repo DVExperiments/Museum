@@ -111,17 +111,50 @@
 
   // ---------------------------------------------------------------- The Archive
   let collection = [];
-  const STATUS = { intact: 'Intact', altered: 'Altered', missing: 'Not checked: desk missing', new: 'New since archived' };
+  // the condition of an archived month, in plain words
   function statusHtml(report) {
     if (!report) return '<span class="status-intact">Not yet checked</span>';
+    const names = (ks) => ks.map((k) => SOURCES[k] || k).join(', ').replace(/, ([^,]*)$/, ' and $1');
     const bad = Object.keys(report).filter((k) => report[k] === 'altered');
-    if (bad.length) return '<span class="status-altered">Altered: ' + esc(bad.map((k) => SOURCES[k]).join(', ')) + '</span>';
-    const odd = Object.keys(report).filter((k) => report[k] !== 'intact');
-    return '<span class="status-intact">Intact' + (odd.length ? ' (' + esc(odd.map((k) => SOURCES[k] + ': ' + STATUS[report[k]].toLowerCase()).join('; ')) + ')' : '') + '</span>';
+    if (bad.length) return '<span class="status-altered">Altered: ' + esc(names(bad)) + (bad.length === 1 ? '\u2019s history has' : '\u2019 histories have') + ' changed since it was archived</span>';
+    const gone = Object.keys(report).filter((k) => report[k] === 'missing'), added = Object.keys(report).filter((k) => report[k] === 'new');
+    return '<span class="status-intact">Intact</span>' + (gone.length ? '<small class="cond-note">' + esc(names(gone)) + ' couldn\u2019t be checked this time</small>' : '') +
+      (added.length ? '<small class="cond-note">' + esc(names(added)) + ' joined the universe after this month was archived</small>' : '');
+  }
+  // what happened in an archived month, read from its record
+  function summary(snap) {
+    const dm = (x) => new Date(x + 'T12:00:00Z').toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+    const S = snap.sites, out = [], G = window.G, nm = (id) => (G && G.PX && G.PX[id] ? G.PX[id].name : id);
+    if (S.glacial && S.glacial.races) {
+      const races = S.glacial.races, gp = races.filter((r) => r.kind === 'gp'), wins = {};
+      for (const r of races) wins[r.winner] = (wins[r.winner] || 0) + 1;
+      const top = Object.keys(wins).sort((a, b) => wins[b] - wins[a])[0], close = races.slice().sort((a, b) => a.marginPx - b.marginPx)[0];
+      out.push(['Racing', races.length + ' races. ' + (gp.length ? 'The Grand Prix went to ' + nm(gp[0].winner) + '. ' : '') + (top ? nm(top) + ' won the most, ' + wins[top] + '. ' : '') + (close ? 'Closest finish: ' + close.marginPx + ' pixels.' : '')]);
+    }
+    if (S.weather && S.weather.days && S.weather.days.length) {
+      const d = S.weather.days, hot = d.slice().sort((a, b) => b[1] - a[1])[0], wet = d.slice().sort((a, b) => b[3] - a[3])[0];
+      const v = d.filter((x) => x[6] !== null), hits = v.filter((x) => x[6] === 1).length;
+      out.push(['Weather', 'Warmest ' + hot[1] + '\u00b0 on ' + dm(hot[0]) + '; wettest ' + wet[3] + ' mm on ' + dm(wet[0]) + '.' + (v.length ? ' The forecaster was right ' + Math.round(hits / v.length * 100) + '% of the time.' : '')]);
+    }
+    if (S.senate && S.senate.events) {
+      const laws = S.senate.events.filter((e) => /^Now in effect: /.test(e[2]) || /in.effect/.test(e[0]));
+      out.push(['The Senate', laws.length ? laws.length + ' law' + (laws.length === 1 ? '' : 's') + ' took effect' + ', including ' + laws.slice(0, 2).map((e) => e[2].replace(/^Now in effect: /, '')).join('; ') + '.' : S.senate.events.length ? S.senate.events.length + ' items of business; no new laws took effect.' : 'Not yet sitting.']);
+    }
+    if (S.city && S.city.days && S.city.days.length) {
+      const d = S.city.days, peak = d.slice().sort((a, b) => b[1] - a[1])[0];
+      let dark = 0; for (const x of d) dark += x[3] || 0;
+      out.push(['Pixel City', 'Peak demand ' + Math.round(peak[1]) + ' MW on ' + dm(peak[0]) + '. ' + (dark ? Math.round(dark) + ' blackout hours.' : 'No blackouts.')]);
+    }
+    if (S.bookmaker) {
+      if (S.bookmaker.notOpen) out.push(['The Bookmaker', 'Not yet open.']);
+      else if (S.bookmaker.markets) { const mk = S.bookmaker.markets, big = mk.slice().sort((a, b) => b[5] - a[5])[0]; out.push(['The Bookmaker', mk.length + ' markets.' + (big ? ' The biggest payout, ' + Math.round(big[5]).toLocaleString('en') + ' W, came when ' + nm(big[1]) + ' won.' : '')]); }
+    }
+    return '<dl class="month-summary">' + out.map(([k, v]) => '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>').join('') + '</dl>' +
+      (snap.filled ? '<p class="cond-note">Some sections were added later, when their sites could first be read: ' + esc(Object.keys(snap.filled).map((k) => SOURCES[k] || k).join(', ')) + '.</p>' : '');
   }
   function archiveTable(nightly) {
-    $('archive-table').innerHTML = '<thead><tr><th>Month</th><th>Condition</th><th>Snapshot</th></tr></thead><tbody>' +
-      (collection.length ? collection.map((k) => '<tr id="row-' + k + '"><td>' + esc(M.monthName(k)) + '</td><td class="cond">' + statusHtml(nightly && nightly[k]) + '</td><td><a href="archive/' + k + '.json" download>' + k + '.json</a></td></tr>').join('')
+    $('archive-table').innerHTML = '<thead><tr><th>Month</th><th>Condition</th><th>What happened</th></tr></thead><tbody>' +
+      (collection.length ? collection.map((k) => '<tr id="row-' + k + '"><td>' + esc(M.monthName(k)) + '</td><td class="cond">' + statusHtml(nightly && nightly[k]) + '</td><td><details class="month" data-k="' + k + '"><summary>Read the month</summary><div class="month-body">Fetching the record\u2026</div></details> <a class="datafile" href="archive/' + k + '.json" download title="The record as data, for researchers">data</a></td></tr>').join('')
         : '<tr><td colspan="3" class="empty">The collection is empty. The first months are catalogued the night after the Museum is published.</td></tr>') + '</tbody>';
   }
   async function loadArchive() {
@@ -130,6 +163,12 @@
     try { nightly = (await (await fetch('archive/conservation.json', { cache: 'no-store' })).json()).report; } catch (e) { nightly = null; }
     archiveTable(nightly);
     $('check-all').disabled = !collection.length;
+    document.querySelectorAll('details.month').forEach((d) => d.addEventListener('toggle', async () => {
+      if (!d.open || d.dataset.loaded) return;
+      d.dataset.loaded = '1';
+      try { d.querySelector('.month-body').innerHTML = summary(await (await fetch('archive/' + d.dataset.k + '.json')).json()); }
+      catch (e) { d.querySelector('.month-body').textContent = 'The record could not be read.'; }
+    }));
     if (nightly) $('check-status').textContent = 'Showing the last nightly check.';
     // months that could be catalogued by hand
     const missing = M.completeMonths(now).filter((k) => collection.indexOf(k) < 0);

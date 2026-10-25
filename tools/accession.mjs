@@ -6,6 +6,9 @@
  * 2. Catalogues every complete month not yet in archive/, writing archive/YYYY-MM.json and archive/index.json.
  * 3. Re-checks every archived month against today's code and writes archive/conservation.json.
  *    It never overwrites an archived month: the archive is the record, even when the code disagrees.
+ * 2b. Fills in any site an archived month recorded as missing (its desk failed to load when it was catalogued), if
+ *    it can be computed now. Only the missing section is added, with its checksum and the date it was filled in;
+ *    nothing already in the archive is changed.
  *
  * Options:
  *   --local <dir>   load upstream from a folder laid out like the Pages site (<dir>/Glacial/js/sim.js, <dir>/Weather/universe.js …)
@@ -27,7 +30,9 @@ const BASE = 'https://dvexperiments.github.io/';
 
 const UPSTREAM = [
   ['Glacial/js/pixels.js', true], ['Glacial/js/sim.js', true], ['Glacial/js/league.js', true],
-  ['Weather/universe.js', true], ['Senate/universe.js', false], ['City/universe.js', false], ['Bookmaker/universe.js', false]
+  ['Weather/universe.js', true], ['Senate/universe.js', false], ['City/universe.js', false],
+  // the whole chain: the Senate, the city and the Bookmaker all need the census, the Exchange and Society to compute
+  ['City/census.js', false], ['Exchange/universe.js', false], ['City/society.js', false], ['Bookmaker/universe.js', false]
 ];
 
 async function source(path) {
@@ -73,6 +78,20 @@ for (const key of todo) {
   writeFileSync(join(archiveDir, key + '.json'), JSON.stringify(snap) + '\n');
   have.add(key);
   console.log('archived ' + key + ' in ' + (Date.now() - t0) + ' ms ' + JSON.stringify(snap.checksums));
+}
+
+// fill in sites that were missing when a month was catalogued (never touching what is already there)
+for (const key of [...have].sort()) {
+  const file = join(archiveDir, key + '.json'), archived = JSON.parse(readFileSync(file, 'utf8'));
+  const gaps = Object.keys(archived.sites || {}).filter((k) => archived.sites[k] && archived.sites[k].missing);
+  if (!gaps.length) continue;
+  const [y, m] = key.split('-').map(Number), live = M.snapshotMonth(y, m - 1), filled = [];
+  for (const k of gaps) if (live.sites[k] && !live.sites[k].missing) {
+    archived.sites[k] = live.sites[k]; archived.checksums[k] = live.checksums[k];
+    if (live.versions[k]) archived.versions[k] = live.versions[k];
+    (archived.filled = archived.filled || {})[k] = new Date().toISOString().slice(0, 10); filled.push(k);
+  }
+  if (filled.length) { writeFileSync(file, JSON.stringify(archived) + '\n'); console.log('filled   ' + key + ': ' + filled.join(', ')); }
 }
 
 // conservation: recompute every archived month and compare
