@@ -71,3 +71,5 @@ archive/                         the collection
 ## The Hall of Disasters
 
 Every glitch (City's digital disasters, from 1 March 2027) that has run its course, as an exhibit: what kind, when, how long, how severe, every district it spread through, and what it did. Read from City's `glitchesBetween`. The timeline also carries glitches as they begin and spread.
+
+The timeline now also carries the Exchange, the Bank and Society, and where an event knows its causes, it says why underneath. Each exhibit in the Hall of Disasters lists its consequences: businesses in the districts it struck that closed within three weeks, with the disruption among their causes.

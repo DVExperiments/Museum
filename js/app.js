@@ -7,7 +7,7 @@
   const M = window.PixelUniverse && window.PixelUniverse.museum;
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const SOURCES = { glacial: 'Glacial', weather: 'Weather Bureau', senate: 'Senate', city: 'Pixel City', bookmaker: 'Bookmaker', museum: 'Museum' };
+  const SOURCES = { glacial: 'Glacial', weather: 'Weather Bureau', senate: 'Senate', city: 'Pixel City', bookmaker: 'Bookmaker', museum: 'Museum', commerce: 'Exchange', bank: 'Bank', society: 'Society' };
   const longDate = (s) => { const d = new Date(s); return d.getUTCDate() + ' ' + ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][d.getUTCMonth()] + ' ' + d.getUTCFullYear(); };
   const hm = (ms) => { const m = Math.round(ms / 60000), h = Math.floor(m / 60), r = m % 60; return (h ? h + ' hour' + (h === 1 ? '' : 's') + (r ? ' ' : '') : '') + (r || !h ? r + ' minute' + (r === 1 ? '' : 's') : ''); };
   const now = Date.now();
@@ -45,6 +45,13 @@
   }
 
   // ---------------------------------------------------------------- Hall of Disasters
+  // what a glitch led to: businesses in the districts it struck that closed within three weeks, partly because of it
+  function consequences(chain) {
+    const X = window.PixelUniverse && window.PixelUniverse.commerce; if (!X || !X.ready()) return '';
+    const names = chain.map((g) => g.districtName), from = chain[0].start, to = Math.max(...chain.map((g) => g.end)) + 21 * 86400000;
+    const hit = X.eventsBetween(from, to).filter((e) => e.type === 'business.closed' && names.indexOf(e.data.district) >= 0 && (e.data.causes || []).some((c) => c.cause === 'glitches' || c.cause === 'deliveries' || c.cause === 'blackouts'));
+    return hit.length ? '<p class="sub"><b>Consequences:</b> ' + hit.length + ' business' + (hit.length === 1 ? '' : 'es') + ' closed in the weeks after, with the disruption among the causes: ' + esc(hit.slice(0, 3).map((e) => e.data.name).join(', ')) + (hit.length > 3 ? ' and others' : '') + '.</p>' : '';
+  }
   function disasters() {
     const C = window.PixelUniverse && window.PixelUniverse.city;
     const el = $('disaster-list');
@@ -61,7 +68,7 @@
       const path = c.map((g) => g.districtName).join(' \u2192 ');
       return '<figure class="disaster"><div class="exhibit exhibit-' + first.type + '" aria-hidden="true"></div><figcaption><b>' + esc(first.label) + (c.length > 1 ? ', spreading' : '') + '</b>' +
         '<span class="sub">' + esc(fmt(first.start)) + (first.storm ? ', in a storm' : '') + '. ' + hours + ' hours. Severity ' + first.severity + ' of 3.</span>' +
-        '<p>' + esc(path) + '</p><p class="sub">' + esc(WHAT[first.type]) + '</p></figcaption></figure>';
+        '<p>' + esc(path) + '</p><p class="sub">' + esc(WHAT[first.type]) + '</p>' + consequences(c) + '</figcaption></figure>';
     }).join('') + '</div>';
   }
 
@@ -74,7 +81,7 @@
     for (const e of events[min]) { const k = e.time.slice(0, 7); (byMonth[k] = byMonth[k] || []).push(e); }
     const keys = Object.keys(byMonth).sort().reverse();
     $('timeline-list').innerHTML = keys.map((k) => '<div class="month"><h3>' + esc(M.monthName(k)) + '</h3><ol>' +
-      byMonth[k].slice().reverse().map((e) => { const d = new Date(e.time); return '<li' + (e.importance >= 5 ? ' class="major"' : '') + '><time datetime="' + e.time + '">' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + '</time><span>' + esc(e.headline) + ' <span class="src">' + esc(SOURCES[e.source] || e.source) + '</span></span></li>'; }).join('') +
+      byMonth[k].slice().reverse().map((e) => { const d = new Date(e.time); return '<li' + (e.importance >= 5 ? ' class="major"' : '') + '><time datetime="' + e.time + '">' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + '</time><span>' + esc(e.headline) + ' <span class="src">' + esc(SOURCES[e.source] || e.source) + '</span>' + (e.data && e.data.causes && e.data.causes.length ? '<small class="why">Why: ' + esc(e.data.causes.map((c) => c.label + (c.share < 100 ? ' (' + c.share + '%)' : '')).join(', ')) + '</small>' : '') + '</span></li>'; }).join('') +
       '</ol></div>').join('');
   }
 

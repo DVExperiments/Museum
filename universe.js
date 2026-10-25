@@ -113,7 +113,8 @@
       out.push({ id: 'glacial:' + r.id + ':finish', time: iso(at), source: 'glacial', type: 'race.finish', importance: 5, headline: pname(r.winner.id) + ' wins the ' + r.name, data: { race: r.id, winner: r.winner.id } });
     }
     if (EPOCH <= t) out.push({ id: 'glacial:first-crawl', time: iso(EPOCH), source: 'glacial', type: 'universe.begins', importance: 5, headline: 'The first Daily Crawl begins, and with it the Pixel Universe', data: {} });
-    for (const [k, s] of [['weather', desk.weather()], ['senate', desk.senate()], ['city', desk.city()], ['bookmaker', desk.bookmaker()]]) {
+    const P = root.PixelUniverse || {};
+    for (const [k, s] of [['weather', desk.weather()], ['senate', desk.senate()], ['city', desk.city()], ['bookmaker', desk.bookmaker()], ['commerce', P.commerce], ['bank', P.bank], ['society', P.society]]) {
       if (!s) continue;
       for (const e of s.eventsBetween(EPOCH, t)) if (e.importance >= min) out.push(Object.assign({}, e, { source: k === 'weather' ? 'weather' : e.source }));
     }

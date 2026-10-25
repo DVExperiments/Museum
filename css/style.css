@@ -108,3 +108,5 @@ button:disabled { opacity: 0.5; cursor: progress; }
 .exhibit-bleed { background: linear-gradient(135deg, #FF3B6B, #F2D024 45%, #2BFF88 55%, #3D8BFF); }
 .exhibit-stuck { background: repeating-linear-gradient(0deg, #1A2A4A 0 10px, #C8E0FF 10px 11px); }
 .exhibit-leak { background: radial-gradient(circle, #46D6FF 0 20%, #05080F 21%) 0 0 / 14px 14px; }
+
+.why { display: block; color: var(--muted, #8a8a8a); font-size: 0.85em; margin-top: 2px; }
