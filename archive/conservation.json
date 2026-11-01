@@ -69,6 +69,13 @@
    "senate": "intact",
    "city": "intact",
    "bookmaker": "intact"
+  },
+  "2026-10": {
+   "glacial": "intact",
+   "weather": "intact",
+   "senate": "intact",
+   "city": "intact",
+   "bookmaker": "intact"
   }
  }
 }
